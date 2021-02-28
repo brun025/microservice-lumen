@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  app:
+    container_name: ${APPNAME}
+    hostname: "${DOMAIN}" 
+    build:
+      context: .
+      target: '${ENV}'
+      args:
+        - ENV=${ENV}
+        - APPNAME=${APPNAME}
+        - DOMAIN=${DOMAIN}
+        - WORKDIR_USER=${WORKDIR_USER}
+        - WORKDIR_GROUP=${WORKDIR_GROUP}
+        - WORKDIRPATH=${WORKDIRPATH}
+    environment:
+      - PHP_EXTENSION_XDEBUG=1
+    volumes:
+      - '${SOURCEPATH}:/var/www'
+      - '${VOLUMESPATH}/fpm/logs/:/var/log/php7/'
+      - '${VOLUMESPATH}/nginx/logs/:/var/log/nginx/'
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - database
+    # networks:
+    #   - db_net
+ 
+  database:
+    image: mysql:5.7
+    command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+    container_name: database
+    environment:
+      MYSQL_DATABASE: 'lumen'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - "33306:3306"
+    volumes:
+      - database-data:/var/lib/mysql
+
+volumes:
+  database-data:
+    driver: "local"
+# networks:
+#   db_net:
